@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R1 ESPECIAL DO GUINHO - V9</title>
+    <title>R1 ESPECIAL DO GUINHO - PRO</title>
     <style>
         /* CONFIGURAÇÕES DE TEMA E CORES */
         :root {
@@ -40,7 +40,7 @@
             background: #1a1a1a; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 1000;
         }
-        #lock-screen h2 { color: #f1c40f; margin-bottom: 20px; text-transform: uppercase; }
+        #lock-screen h2 { color: #f1c40f; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
         #lock-screen input { 
             padding: 15px; border-radius: 10px; border: none; 
             font-size: 1.2em; text-align: center; width: 280px; margin-bottom: 15px;
@@ -48,13 +48,15 @@
         .btn-entrar {
             padding: 12px 40px; background: #f1c40f; color: black;
             border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
-            text-transform: uppercase; margin-bottom: 20px;
+            text-transform: uppercase; margin-bottom: 20px; transition: 0.3s;
         }
+        .btn-entrar:hover { transform: scale(1.05); }
         .btn-teste {
             background: transparent; color: #f1c40f; border: 2px solid #f1c40f;
             padding: 10px 20px; border-radius: 8px; cursor: pointer;
-            font-weight: bold; font-size: 0.9em;
+            font-weight: bold; font-size: 0.9em; transition: 0.3s;
         }
+        .btn-teste:hover { background: rgba(241, 196, 15, 0.1); }
 
         /* CONTEÚDO PRINCIPAL */
         .container { 
@@ -108,8 +110,8 @@
         .btn-clear { background: #c0392b; }
         .btn-whatsapp { background: #25d366; color: white; }
 
-        /* NOVO BOTÃO DE PAGAMENTO */
-        .btn-pagamento { 
+        /* ESTILO DO BOTÃO DE PAGAMENTO */
+        #btnPagamento {
             background: #f1c40f; 
             color: #000; 
             border: 2px solid #000;
@@ -123,7 +125,11 @@
             background: var(--section-bg); padding: 12px; border-radius: 8px;
             border: 1px solid var(--border-color); font-family: monospace;
         }
-        .jogo-card.ganhador { border: 2px solid #f1c40f; background: rgba(241, 196, 15, 0.2); font-weight: bold; }
+        .jogo-card.ganhador { 
+            border: 2px solid #f1c40f; 
+            background: rgba(241, 196, 15, 0.2); 
+            font-weight: bold;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -159,7 +165,7 @@
             <button class="btn-action btn-clear" onclick="limparTudo()">LIMPAR TUDO</button>
             <button class="btn-action btn-whatsapp" onclick="chamarEster()">Falar com a Consultora Ester</button>
             
-            <button id="btnPagamento" class="btn-action btn-pagamento" onclick="chamarEster()">CLICK AQUI PARA A VERSÃO COMPLETA</button>
+            <button id="btnPagamento" class="btn-action" onclick="irParaPagamento()">CLICK AQUI PARA A VERSÃO COMPLETA</button>
         </div>
 
         <div id="resultados">Os jogos aparecerão aqui...</div>
@@ -167,8 +173,10 @@
 
 <script>
     const SENHA_CORRETA = "R1ESPECIAL";
+    const LINK_PAGAMENTO = "https://mpago.la/1bHkGYS";
     const WHATSAPP_ESTER = "5554992985918";
     
+    // Matriz de 29 jogos
     const MATRIZ_BASE = [
         [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,24],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,24],
         [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,18,19,20,21,22,23],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,21,22,23,24],
@@ -194,11 +202,9 @@
         if (localStorage.getItem("testes_restantes") === null) localStorage.setItem("testes_restantes", "3");
         document.getElementById("msgTeste").innerText = `Você possui ${localStorage.getItem("testes_restantes")} acessos de teste.`;
         
-        // Se já autenticou com a senha oficial no passado
         if (localStorage.getItem("autenticado") === "true") {
             liberarSite('completo');
         }
-
         if (localStorage.getItem("tema") === "dark") document.body.classList.add("dark-mode");
         renderizarConferidor();
     }
@@ -218,17 +224,21 @@
         } else { alert("Limite de testes atingido!"); }
     }
 
-    // --- FUNÇÃO DE LIBERAÇÃO COM PARÂMETRO DE MODO ---
     function liberarSite(modo) {
         document.getElementById("lock-screen").style.display = "none";
         document.getElementById("main-content").style.display = "block";
         
-        const btnPagamento = document.getElementById("btnPagamento");
+        // MOSTRAR OU ESCONDER BOTÃO DE PAGAMENTO
+        const btnPag = document.getElementById("btnPagamento");
         if (modo === 'teste') {
-            btnPagamento.style.display = "inline-block"; // Mostra para teste
+            btnPag.style.display = "inline-block";
         } else {
-            btnPagamento.style.display = "none"; // Esconde para senha oficial
+            btnPag.style.display = "none";
         }
+    }
+
+    function irParaPagamento() {
+        window.open(LINK_PAGAMENTO, '_blank');
     }
 
     function alternarTema() {
@@ -237,7 +247,7 @@
     }
 
     function chamarEster() {
-        const url = `https://wa.me/${WHATSAPP_ESTER}?text=Olá Ester, gostaria de adquirir a VERSÃO COMPLETA do R1 Especial do Guinho.`;
+        const url = `https://wa.me/${WHATSAPP_ESTER}?text=Olá Ester, gostaria de tirar dúvidas sobre o R1 Especial do Guinho.`;
         window.open(url, '_blank');
     }
 
