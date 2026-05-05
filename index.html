@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R1 ESPECIAL DO GUINHO - V8</title>
+    <title>R1 ESPECIAL DO GUINHO - V9</title>
     <style>
         /* CONFIGURAÇÕES DE TEMA E CORES */
         :root {
@@ -108,6 +108,14 @@
         .btn-clear { background: #c0392b; }
         .btn-whatsapp { background: #25d366; color: white; }
 
+        /* NOVO BOTÃO DE PAGAMENTO */
+        .btn-pagamento { 
+            background: #f1c40f; 
+            color: #000; 
+            border: 2px solid #000;
+            display: none; /* Escondido por padrão */
+        }
+
         .btn-action:hover { transform: scale(1.05); filter: brightness(1.1); }
 
         #resultados { display: grid; gap: 10px; text-align: left; }
@@ -115,12 +123,7 @@
             background: var(--section-bg); padding: 12px; border-radius: 8px;
             border: 1px solid var(--border-color); font-family: monospace;
         }
-        .jogo-card.ganhador { 
-            border: 2px solid #f1c40f; 
-            background: rgba(241, 196, 15, 0.2); 
-            font-weight: bold;
-            box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
-        }
+        .jogo-card.ganhador { border: 2px solid #f1c40f; background: rgba(241, 196, 15, 0.2); font-weight: bold; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -155,6 +158,8 @@
             <button class="btn-action btn-share" onclick="compartilhar()">COMPARTILHAR</button>
             <button class="btn-action btn-clear" onclick="limparTudo()">LIMPAR TUDO</button>
             <button class="btn-action btn-whatsapp" onclick="chamarEster()">Falar com a Consultora Ester</button>
+            
+            <button id="btnPagamento" class="btn-action btn-pagamento" onclick="chamarEster()">CLICK AQUI PARA A VERSÃO COMPLETA</button>
         </div>
 
         <div id="resultados">Os jogos aparecerão aqui...</div>
@@ -188,7 +193,12 @@
     function iniciarApp() {
         if (localStorage.getItem("testes_restantes") === null) localStorage.setItem("testes_restantes", "3");
         document.getElementById("msgTeste").innerText = `Você possui ${localStorage.getItem("testes_restantes")} acessos de teste.`;
-        if (localStorage.getItem("autenticado") === "true") liberarSite();
+        
+        // Se já autenticou com a senha oficial no passado
+        if (localStorage.getItem("autenticado") === "true") {
+            liberarSite('completo');
+        }
+
         if (localStorage.getItem("tema") === "dark") document.body.classList.add("dark-mode");
         renderizarConferidor();
     }
@@ -196,7 +206,7 @@
     function validarSenha() {
         if (document.getElementById("passInput").value === SENHA_CORRETA) {
             localStorage.setItem("autenticado", "true");
-            liberarSite();
+            liberarSite('completo');
         } else { alert("Senha Incorreta!"); }
     }
 
@@ -204,13 +214,21 @@
         let saldo = parseInt(localStorage.getItem("testes_restantes"));
         if (saldo > 0) {
             localStorage.setItem("testes_restantes", (saldo - 1).toString());
-            liberarSite();
+            liberarSite('teste');
         } else { alert("Limite de testes atingido!"); }
     }
 
-    function liberarSite() {
+    // --- FUNÇÃO DE LIBERAÇÃO COM PARÂMETRO DE MODO ---
+    function liberarSite(modo) {
         document.getElementById("lock-screen").style.display = "none";
         document.getElementById("main-content").style.display = "block";
+        
+        const btnPagamento = document.getElementById("btnPagamento");
+        if (modo === 'teste') {
+            btnPagamento.style.display = "inline-block"; // Mostra para teste
+        } else {
+            btnPagamento.style.display = "none"; // Esconde para senha oficial
+        }
     }
 
     function alternarTema() {
@@ -219,7 +237,7 @@
     }
 
     function chamarEster() {
-        const url = `https://wa.me/${WHATSAPP_ESTER}?text=Olá Ester, gostaria de tirar dúvidas sobre o R1 Especial do Guinho.`;
+        const url = `https://wa.me/${WHATSAPP_ESTER}?text=Olá Ester, gostaria de adquirir a VERSÃO COMPLETA do R1 Especial do Guinho.`;
         window.open(url, '_blank');
     }
 
@@ -244,7 +262,6 @@
         }
     }
 
-    // --- CORREÇÃO DA FUNÇÃO GERAR E CONFERIR (ADIÇÃO DO POPUP) ---
     function gerarEConferir() {
         const dezenaExcluir = parseInt(document.getElementById('excluirDezena').value);
         if (isNaN(dezenaExcluir) || dezenaExcluir < 1 || dezenaExcluir > 25) return alert("Escolha uma dezena válida!");
@@ -256,29 +273,18 @@
         const resDiv = document.getElementById('resultados');
         resDiv.innerHTML = "<strong>JOGOS GERADOS:</strong><br><br>";
         
-        let contador15 = 0; // Variável para o Popup
-
+        let contador15 = 0;
         jogosGeradosParaCompartilhar.forEach((jogo, idx) => {
             const acertos = jogo.filter(n => dezenasSorteadas.includes(n)).length;
             const card = document.createElement('div');
-            
-            // Se o jogo tem 15 acertos, incrementa o contador
-            if (acertos === 15) {
-                card.className = 'jogo-card ganhador';
-                contador15++;
-            } else {
-                card.className = 'jogo-card';
-            }
-
+            if (acertos === 15) { card.className = 'jogo-card ganhador'; contador15++; } 
+            else { card.className = 'jogo-card'; }
             card.innerHTML = `JOGO ${idx+1}: ${jogo.map(n => n.toString().padStart(2, '0')).join(' ')} | <b>${acertos} ACERTOS</b>`;
             resDiv.appendChild(card);
         });
 
-        // POPUP DE CONFIRMAÇÃO
         if (dezenasSorteadas.length === 15) {
             alert(`✅ Conferência Finalizada!\n\nVocê teve um total de ${contador15} combinação(ões) com 15 acertos.`);
-        } else {
-            alert("Jogos gerados com sucesso! Marque 15 dezenas no conferidor para ver o resultado do popup.");
         }
     }
 
@@ -296,12 +302,8 @@
         if (jogosGeradosParaCompartilhar.length === 0) return alert("Gere os jogos primeiro!");
         let t = "R1 ESPECIAL DO GUINHO 🌈\n\n";
         jogosGeradosParaCompartilhar.forEach((j, i) => t += `J${i+1}: ${j.join(' ')}\n`);
-        
-        if (navigator.share) {
-            navigator.share({ title: 'Jogos do Guinho', text: t });
-        } else {
-            navigator.clipboard.writeText(t).then(() => alert("Jogos copiados!"));
-        }
+        if (navigator.share) { navigator.share({ title: 'Jogos do Guinho', text: t }); } 
+        else { navigator.clipboard.writeText(t).then(() => alert("Jogos copiados!")); }
     }
 
     document.onkeydown = e => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) return false; };
