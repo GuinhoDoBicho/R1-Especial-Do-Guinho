@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R1 ESPECIAL DO GUINHO - V7</title>
+    <title>R1 ESPECIAL DO GUINHO - V8</title>
     <style>
         /* CONFIGURAÇÕES DE TEMA E CORES */
         :root {
@@ -94,7 +94,7 @@
             border-radius: 8px; font-weight: bold; background: #f8f9fa; color: #333;
         }
 
-        .btn-num.selected-conferir { background: #2b1de8; color: white; }
+        .btn-num.selected-conferir { background: #2b1de8; color: white; border-color: #2b1de8; }
 
         .actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 25px 0; }
         
@@ -115,7 +115,12 @@
             background: var(--section-bg); padding: 12px; border-radius: 8px;
             border: 1px solid var(--border-color); font-family: monospace;
         }
-        .jogo-card.ganhador { border: 2px solid #f1c40f; background: rgba(241, 196, 15, 0.1); font-weight: bold; }
+        .jogo-card.ganhador { 
+            border: 2px solid #f1c40f; 
+            background: rgba(241, 196, 15, 0.2); 
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -159,7 +164,6 @@
     const SENHA_CORRETA = "R1ESPECIAL";
     const WHATSAPP_ESTER = "5554992985918";
     
-    // Matriz de 29 jogos
     const MATRIZ_BASE = [
         [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,24],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22,24],
         [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,17,18,19,20,21,22,23],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17,18,19,21,22,23,24],
@@ -179,7 +183,7 @@
     ];
 
     let dezenasSorteadas = [];
-    let jogosGeradosParaCompartilhar = []; // Variável global para armazenar os jogos
+    let jogosGeradosParaCompartilhar = [];
 
     function iniciarApp() {
         if (localStorage.getItem("testes_restantes") === null) localStorage.setItem("testes_restantes", "3");
@@ -215,7 +219,7 @@
     }
 
     function chamarEster() {
-        const url = `https://wa.me/${WHATSAPP_ESTER}?text=Olá Ester, gostaria de informações sobre o R1 Especial do Guinho.`;
+        const url = `https://wa.me/${WHATSAPP_ESTER}?text=Olá Ester, gostaria de tirar dúvidas sobre o R1 Especial do Guinho.`;
         window.open(url, '_blank');
     }
 
@@ -240,6 +244,7 @@
         }
     }
 
+    // --- CORREÇÃO DA FUNÇÃO GERAR E CONFERIR (ADIÇÃO DO POPUP) ---
     function gerarEConferir() {
         const dezenaExcluir = parseInt(document.getElementById('excluirDezena').value);
         if (isNaN(dezenaExcluir) || dezenaExcluir < 1 || dezenaExcluir > 25) return alert("Escolha uma dezena válida!");
@@ -248,17 +253,33 @@
         for (let i = 1; i <= 25; i++) { if (i !== dezenaExcluir) dezenasVivas.push(i); }
 
         jogosGeradosParaCompartilhar = MATRIZ_BASE.map(linha => linha.map(pos => dezenasVivas[pos - 1]));
-        
         const resDiv = document.getElementById('resultados');
-        resDiv.innerHTML = "";
+        resDiv.innerHTML = "<strong>JOGOS GERADOS:</strong><br><br>";
         
+        let contador15 = 0; // Variável para o Popup
+
         jogosGeradosParaCompartilhar.forEach((jogo, idx) => {
             const acertos = jogo.filter(n => dezenasSorteadas.includes(n)).length;
             const card = document.createElement('div');
-            card.className = 'jogo-card' + (acertos === 15 ? ' ganhador' : '');
-            card.innerHTML = `JOGO ${idx+1}: ${jogo.map(n => n.toString().padStart(2, '0')).join(' ')} | ${acertos} ACERTOS`;
+            
+            // Se o jogo tem 15 acertos, incrementa o contador
+            if (acertos === 15) {
+                card.className = 'jogo-card ganhador';
+                contador15++;
+            } else {
+                card.className = 'jogo-card';
+            }
+
+            card.innerHTML = `JOGO ${idx+1}: ${jogo.map(n => n.toString().padStart(2, '0')).join(' ')} | <b>${acertos} ACERTOS</b>`;
             resDiv.appendChild(card);
         });
+
+        // POPUP DE CONFIRMAÇÃO
+        if (dezenasSorteadas.length === 15) {
+            alert(`✅ Conferência Finalizada!\n\nVocê teve um total de ${contador15} combinação(ões) com 15 acertos.`);
+        } else {
+            alert("Jogos gerados com sucesso! Marque 15 dezenas no conferidor para ver o resultado do popup.");
+        }
     }
 
     function limparTudo() {
@@ -268,30 +289,18 @@
         document.querySelectorAll('.btn-num').forEach(b => b.classList.remove('selected-conferir'));
         document.getElementById('sorteadasCount').innerText = "Selecionadas: 0 / 15";
         document.getElementById('resultados').innerHTML = "Os jogos aparecerão aqui...";
+        alert("Campos limpos!");
     }
 
-    // --- CORREÇÃO DA FUNÇÃO COMPARTILHAR ---
     function compartilhar() {
-        if (jogosGeradosParaCompartilhar.length === 0) {
-            return alert("Gere as combinações primeiro clicando em GERAR E CONFERIR!");
-        }
-
-        let textoFormatado = "R1 ESPECIAL DO GUINHO 🌈\n\n";
-        jogosGeradosParaCompartilhar.forEach((jogo, i) => {
-            textoFormatado += `JOGO ${i+1}: ${jogo.map(n => n.toString().padStart(2, '0')).join(' ')}\n`;
-        });
-
-        // Tenta usar a API de compartilhamento nativa (Mobile)
+        if (jogosGeradosParaCompartilhar.length === 0) return alert("Gere os jogos primeiro!");
+        let t = "R1 ESPECIAL DO GUINHO 🌈\n\n";
+        jogosGeradosParaCompartilhar.forEach((j, i) => t += `J${i+1}: ${j.join(' ')}\n`);
+        
         if (navigator.share) {
-            navigator.share({
-                title: 'Meus Jogos - R1 Especial',
-                text: textoFormatado
-            }).catch((err) => console.log("Erro ao compartilhar", err));
+            navigator.share({ title: 'Jogos do Guinho', text: t });
         } else {
-            // Fallback: Copia para a área de transferência (Desktop/PC)
-            navigator.clipboard.writeText(textoFormatado).then(() => {
-                alert("Jogos copiados para a área de transferência! Agora é só colar (Ctrl+V) onde desejar.");
-            });
+            navigator.clipboard.writeText(t).then(() => alert("Jogos copiados!"));
         }
     }
 
